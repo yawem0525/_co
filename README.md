@@ -2,7 +2,7 @@
 
 欄位 | 內容
 -----|--------
-學期 | 112 學年上學期
+學期 | 113 學年上學期
 學生 |  張雅雯
 學號末兩碼 | 39
 教師 | [陳鍾誠](https://www.nqu.edu.tw/educsie/index.php?act=blog&code=list&ids=4)
