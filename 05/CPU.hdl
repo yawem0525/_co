@@ -39,5 +39,48 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // Put your code here:
+ // Put your code here:
+    //A_Register:儲存地址或立即值 D_Register:儲存運算中間值
+    // 指令解碼 //AorC=0是A指令 AorC=1是C指令
+    And16(a=true,b=instruction,out[15]=AorC,out[12]=a,
+          out[11]=c1,out[10]=c2,out[9]=c3,out[8]=c4,out[7]=c5,out[6]=c6,
+          out[5]=d1,out[4]=d2,out[3]=d3,out[2]=j1,out[1]=j2,out[0]=j3);
+
+    Mux16(a=instruction, b=ALUresult, sel=AorC, out=if1);  // 決定A_Register要載入的值
+    Mux16(a=Aout, b=inM, sel=a, out=if2);//決定ALU第二個輸入
+
+    //A_Register
+    Not(in=AorC,out=isA);             // 判斷否是為A指令
+    And(a=AorC,b=d1,out=ALUtoA);     // 由d1判斷C指令是否要將ALU的結果存進A_Register
+    Or(a=isA,b=ALUtoA,out=Aload);   // 當為A指令或是C指令需要存A值，則Aload = 1 (此控制A_Rgister是否存入新值)
+    ARegister(in=if1,load=Aload,out=Aout,out[0..14]=addressM);
+    //如果Aload=1，if1載入A_Register，Aout=A暫存器輸出，其他15位用於記憶體位址
+
+    //D_Register
+    And(a=AorC, b=d2, out=Dload);   // C指令且d2=1時，Dload=1
+    DRegister(in=ALUresult, load=Dload, out=Dout);  
+    // Dload = 1 將ALU載入D_Redister
+    
+    //ALU
+    ALU(x=Dout,y=if2,zx=c1,nx=c2,zy=c3,ny=c4,f=c5,no=c6,out=ALUresult,out=outM,zr=zr,ng=ng);
+    //outM輸出到記憶體的值
+
+    //jump
+    //pg:ALU結果為正 、 ng:ALU結果為負、 zr：ALU結果=0
+    Or(a=ng,b=zr,out=ngzr);
+    Not(in=ngzr,out=pg);              
+    And(a=ng,b=j1,out=Low);      //對應JLP(jump if less)
+    And(a=zr,b=j2,out=Equal);    //JEQ(jump if Equal)
+    And(a=pg,b=j3,out=Big);      //JQP(jump if Greater)
+    Or(a=Low,b=Equal,out=LowandEqual); //小於或等於
+    Or(a=LowandEqual,b=Big,out=pass);   // 只要其中一個條件滿足就可以通過
+    
+    And(a=AorC, b=pass, out=PCload); //指令A不跳轉
+    //當為指令C、跳轉條件成立時，PCload=1
+    PC(in=Aout, load=PCload, inc=true, reset=reset, out[0..14]=pc);
+    //reset=1，PC重置=0 
+    //PCload=1,Pc載入A_Register的值，否則PC+1，只到下一個指令
+
+    // output
+    And(a=AorC, b=d3, out=writeM);         // writeM = AorC & d3
 }
