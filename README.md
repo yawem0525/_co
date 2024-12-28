@@ -9,6 +9,7 @@
 學校科系 | [金門大學資訊工程系](https://www.nqu.edu.tw/educsie/index.php)
 課程教材 | https://github.com/ccc112a/cpu2os <BR/> https://www.nand2tetris.org/
 # 期中
+## 111210539
 
 ### 第一週習題:
 - [Not](https://github.com/yawem0525/_co/blob/master/01/Not.hdl)
